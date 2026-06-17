@@ -6,6 +6,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import lombok.RequiredArgsConstructor;
 import java.util.Base64;
 import java.util.Map;
+import java.util.HashMap;
 
 @Component
 @RequiredArgsConstructor
@@ -13,39 +14,24 @@ public class IzipayClient {
 
     private final WebClient webClient;
 
-    @Value("${izipay.merchant-code}")
-    private String merchantCode;
-
-    @Value("${izipay.public-key}")
-    private String publicKey;
-
     @Value("${izipay.username}")
     private String username;
 
     @Value("${izipay.password}")
     private String password;
 
-    public String generarToken() {
+    @Value("${izipay.merchant-code}")
+    private String merchantCode;
+
+    private String getBasicAuth() {
         String credenciales = username + ":" + password;
-        String basicAuth = Base64.getEncoder()
-                .encodeToString(credenciales.getBytes());
-
-        Map response = webClient.post()
-                .uri("/security/v1/Token")
-                .header("Authorization", "Basic " + basicAuth)
-                .header("Content-Type", "application/json")
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
-
-        return String.valueOf(response.get("token"));
+        return "Basic " + Base64.getEncoder().encodeToString(credenciales.getBytes());
     }
 
     public Map<String, Object> procesarPago(Map<String, Object> request) {
-        String token = generarToken();
         return webClient.post()
-                .uri("/api/v1/pay")
-                .header("Authorization", "Bearer " + token)
+                .uri("/api-payment/V4/Charge/CreatePayment")
+                .header("Authorization", getBasicAuth())
                 .header("Content-Type", "application/json")
                 .bodyValue(request)
                 .retrieve()

@@ -10,7 +10,7 @@ public class WebClientConfig {
     @Bean
     public WebClient webClient() {
         return WebClient.builder()
-                .baseUrl("https://api.izipay.pe")
+                .baseUrl("https://api.micuentaweb.pe")
                 .build();
     }
 }
